@@ -12,6 +12,9 @@ private:
 	
 public:
 	MyImage(CImage * cImage);
+	MyImage();
+
+	void setImage(CImage * cImage);
 
 	inline int getWidth()
 	{
@@ -26,6 +29,11 @@ public:
 	inline bool isColorful()
 	{
 		return pixelSize == 1 ? false : true;
+	}
+
+	inline int getBPP()
+	{
+		return myImg->GetBPP();
 	}
 
 	inline byte readImage(int x, int y)
