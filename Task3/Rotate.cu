@@ -16,7 +16,7 @@ inline void checkCudaErrors(cudaError err) //cuda error handle function
 	}
 }
 
-__global__ void Zoom_kernel(byte *GPU_source, byte *GPU_result, int HandleWidth, int HandleHeight, int SourceWidth, int SourceHeight, double param)
+__global__ void Rotate_kernel(byte *GPU_source, byte *GPU_result, int HandleWidth, int HandleHeight, int SourceWidth, int SourceHeight, double angle)
 {
 	//x，y坐标即为对应的线程在整个thread阵里面的x，y坐标
 	int x = blockIdx.x*blockDim.x + threadIdx.x;
@@ -28,28 +28,32 @@ __global__ void Zoom_kernel(byte *GPU_source, byte *GPU_result, int HandleWidth,
 	}
 
 	//映射回原图中的坐标
-	double x_origin = x / param;
-	double y_origin = y / param;
+	point_double originCenter(SourceWidth / 2.0, SourceHeight / 2.0);
+	point_double nowCenter(HandleWidth / 2.0, HandleHeight / 2.0);
 
-	if (x_origin >= SourceWidth || y_origin >= SourceHeight)
+	point now(x, y);
+	point_double origin = getOriginProjection(now, nowCenter, originCenter, angle);
+
+	if (origin.x >= SourceWidth || origin.y >= SourceHeight || origin.x < 0 || origin.y < 0)
 	{
 		return;
 	}
 
-	if (x_origin <= 1 || y_origin <= 1 || x_origin >= SourceWidth - 2 || y_origin >= SourceHeight - 2)
+	if (origin.x < 1 || origin.y < 1 || origin.x >= SourceWidth - 2 || origin.y >= SourceHeight - 2)
 	{
 		//图像边缘使用最近邻插值法
-		GPU_result[y*HandleWidth + x] = GPU_source[(int)y_origin*SourceWidth + (int)x_origin];
+		GPU_result[y*HandleWidth + x] = GPU_source[(int)origin.y*SourceWidth + (int)origin.x];
 	}
 	else
 	{
 		//获得临近点
 		point neighbors[4][4];
-		getNeighborPoints(neighbors, x_origin, y_origin);
+		getNeighborPoints(neighbors, origin.x, origin.y);
+
 		//获得权值
 		double weights[4][4];
-		getWeight(weights, x_origin, y_origin);
-		
+		getWeight(weights, origin.x, origin.y);
+
 		double value = 0;
 		for (int y = 0; y < 4; y++)
 		{
@@ -65,11 +69,8 @@ __global__ void Zoom_kernel(byte *GPU_source, byte *GPU_result, int HandleWidth,
 	}
 }
 
-extern "C" void Zoom_host(byte* source, byte* result_buf, int HandleWidth, int HandleHeight, int SourceWidth, int SourceHeight)
+extern "C" void Rotate_host(byte* source, byte* result_buf, int HandleWidth, int HandleHeight, int SourceWidth, int SourceHeight, double angle)
 {
-	//计算缩放比
-	double param = (double)HandleHeight / SourceHeight;
-
 	//指定GPU分配空间方式
 	dim3 DimBlock(BlockXMaxThreadNum, BlockYMaxThreadNum);
 	dim3 DimGrid(HandleWidth / BlockXMaxThreadNum + 1, HandleHeight / BlockYMaxThreadNum + 1);
@@ -84,7 +85,7 @@ extern "C" void Zoom_host(byte* source, byte* result_buf, int HandleWidth, int H
 
 	checkCudaErrors(cudaMemcpy(GPU_source, source, sizeof(byte)*SourceHeight*SourceWidth, cudaMemcpyHostToDevice));
 
-	Zoom_kernel << < DimGrid, DimBlock >> > (GPU_source, GPU_result, HandleWidth, HandleHeight, SourceWidth, SourceHeight, param);
+	Rotate_kernel << < DimGrid, DimBlock >> > (GPU_source, GPU_result, HandleWidth, HandleHeight, SourceWidth, SourceHeight, angle);
 
 	checkCudaErrors(cudaMemcpy(result_buf, GPU_result, sizeof(byte)*HandleWidth*HandleHeight, cudaMemcpyDeviceToHost));
 

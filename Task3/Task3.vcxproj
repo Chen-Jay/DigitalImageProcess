@@ -207,6 +207,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Task3.h" />
     <ClInclude Include="Task3Dlg.h" />
+    <ClInclude Include="ZoomOrRotate.cuh" />
     <ClInclude Include="ZoomRotateDlg.h" />
   </ItemGroup>
   <ItemGroup>
@@ -236,6 +237,7 @@
     <Image Include="res\Task3.ico" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="Rotate.cu" />
     <CudaCompile Include="Zoom.cu">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>

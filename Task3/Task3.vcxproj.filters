@@ -54,6 +54,9 @@
     <ClInclude Include="FilterDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ZoomOrRotate.cuh">
+      <Filter>CUDA</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Task3.cpp">
@@ -104,6 +107,9 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="Zoom.cu">
+      <Filter>CUDA</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Rotate.cu">
       <Filter>CUDA</Filter>
     </CudaCompile>
   </ItemGroup>

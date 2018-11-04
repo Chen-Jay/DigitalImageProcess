@@ -106,7 +106,6 @@ UINT ImageProcess::rotate(LPVOID workspaceNoType)
 	long long startIndex = workspace->startIndex;
 	long long endIndex = workspace->endIndex;
 
-
 	point<double> center(handleImage.getWidth() / 2.0, handleImage.getHeight() / 2.0);
 	for (long long index = startIndex; index <= endIndex; index++)
 	{
