@@ -196,6 +196,7 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DFT.cuh" />
     <ClInclude Include="FilterDlg.h" />
     <ClInclude Include="FourierDlg.h" />
     <ClInclude Include="GaussNoiseDlg.h" />
@@ -237,6 +238,7 @@
     <Image Include="res\Task3.ico" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="DFT.cu" />
     <CudaCompile Include="Rotate.cu" />
     <CudaCompile Include="Zoom.cu">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
