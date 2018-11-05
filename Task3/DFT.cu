@@ -29,7 +29,7 @@ __global__ void DFT_kernel(byte *GPU_source, byte *GPU_result, int HandleWidth, 
 	{
 		for (int y = 0; y < SourceWidth; y++)
 		{
-			greyValue = GPU_source[x*SourceWidth + y];
+			greyValue = (double)GPU_source[x*SourceWidth + y];
 			if ((x + y) & 1)
 				greyValue = -1.0*greyValue;
 			double factor = (double)u*x / (double)SourceHeight + (double)v * y / (double)SourceWidth;
