@@ -8,8 +8,10 @@
 #define	PI 3.14159265 
 #endif
 
-constexpr auto BlockXMaxThreadNum = 32;
-constexpr auto BlockYMaxThreadNum = 32;
+//每个Block的最大线程数为1024
+constexpr auto BlockXMaxThreadNum = 16;
+constexpr auto BlockYMaxThreadNum = 16;
+constexpr auto BlockZMaxThreadNum = 4;
 
 __device__ struct ComplexNumber
 {
