@@ -11,7 +11,7 @@ inline void checkCudaErrors(cudaError err) //cuda error handle function
 	}
 }
 
-__global__ void DFT_kernel(byte *GPU_source, byte *GPU_result, int HandleWidth, int HandleHeight, int SourceWidth, int SourceHeight)
+__global__ void DFT_kernel(byte *GPU_source, byte *GPU_result, int HandleWidth, int HandleHeight, int SourceWidth, int SourceHeight, int pitch, int pixelSize)
 {
 	//频率坐标系下的u，v坐标即为对应的线程在整个thread阵里面的x，y坐标
 	int v = blockIdx.x*blockDim.x + threadIdx.x;
@@ -38,36 +38,40 @@ __global__ void DFT_kernel(byte *GPU_source, byte *GPU_result, int HandleWidth, 
 		}
 	}
 
-	double result_norm = 15*log(result.getNorm()+1);
+	double result_norm = 15 * log(result.getNorm() + 1);
 
-	result_norm= result_norm < 0.0 ? 0.0 : result_norm;
-	result_norm= result_norm > 255.0 ? 255.0 : result_norm;
+	result_norm = result_norm < 0.0 ? 0.0 : result_norm;
+	result_norm = result_norm > 255.0 ? 255.0 : result_norm;
 
-	GPU_result[u*SourceWidth + v] = (byte)result_norm;
+	GPU_result[(SourceHeight - 1 - u)*(-1)*pitch + v * pixelSize] = (byte)result_norm;
+	GPU_result[(SourceHeight - 1 - u)*(-1)*pitch + v * pixelSize + 1] = (byte)result_norm;
+	GPU_result[(SourceHeight - 1 - u)*(-1)*pitch + v * pixelSize + 2] = (byte)result_norm;
 
-	//GPU_result[u*SourceWidth + v] = GPU_source[u*SourceWidth +v];
+	//GPU_result[u*SourceWidth + v] = GPU_source[u*SourceWidth +v]; 
 }
 
-extern "C" void DFT_host(byte* source, byte* result_buf, int HandleWidth, int HandleHeight, int SourceWidth, int SourceHeight)
+extern "C" void DFT_host(byte* source, byte* result_buf, int HandleWidth, int HandleHeight, int SourceWidth, int SourceHeight, int pitch, int pixelSize)
 {
 	//指定GPU分配空间方式
 	dim3 DimBlock(BlockXMaxThreadNum, BlockYMaxThreadNum);
 	dim3 DimGrid(HandleWidth / BlockXMaxThreadNum + 1, HandleHeight / BlockYMaxThreadNum + 1);
 
+	byte* result;
+
 	//用来在显存中进行操作的指针
 	byte* GPU_source;
-	byte* GPU_result;
+	//byte* GPU_result;
 
 	//在显存中为原图像和工作区分配空间
 	checkCudaErrors(cudaMalloc((void **)&GPU_source, sizeof(byte)*SourceWidth*SourceHeight));
-	checkCudaErrors(cudaMalloc((void **)&GPU_result, sizeof(byte)*HandleWidth*HandleHeight));
+	checkCudaErrors(cudaMalloc((void **)&result, sizeof(byte)*HandleHeight*((-1)*pitch)));
 
 	checkCudaErrors(cudaMemcpy(GPU_source, source, sizeof(byte)*SourceHeight*SourceWidth, cudaMemcpyHostToDevice));
 
-	DFT_kernel << < DimGrid, DimBlock >> > (GPU_source, GPU_result, HandleWidth, HandleHeight, SourceWidth, SourceHeight);
+	DFT_kernel << < DimGrid, DimBlock >> > (GPU_source, result, HandleWidth, HandleHeight, SourceWidth, SourceHeight, pitch, pixelSize);
 
-	checkCudaErrors(cudaMemcpy(result_buf, GPU_result, sizeof(byte)*HandleWidth*HandleHeight, cudaMemcpyDeviceToHost));
+	checkCudaErrors(cudaMemcpy(result_buf, result, sizeof(byte)*HandleHeight*((-1) * pitch), cudaMemcpyDeviceToHost));
 
 	cudaFree(GPU_source);
-	cudaFree(GPU_result);
+	cudaFree(result);
 }
