@@ -69,7 +69,8 @@ __global__ void Rotate_kernel(byte *GPU_source, byte *GPU_result, int HandleWidt
 	}
 }
 
-extern "C" void Rotate_host(byte* source, byte* result_buf, int HandleWidth, int HandleHeight, int SourceWidth, int SourceHeight, double angle)
+extern "C" void Rotate_host(byte* source, byte* result_buf, int HandleWidth, int HandleHeight, int SourceWidth, int SourceHeight, double angle,
+	int source_pitch, int source_pixelSize, int handle_pitch, int handle_pixelSize)
 {
 	//指定GPU分配空间方式
 	dim3 DimBlock(BlockXMaxThreadNum, BlockYMaxThreadNum);

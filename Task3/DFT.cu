@@ -69,7 +69,6 @@ extern "C" void DFT_host(byte* source, byte* result_buf, int HandleWidth, int Ha
 
 	//用来在显存中进行操作的指针
 	byte* GPU_source;
-	//byte* GPU_result;
 
 	//在显存中为原图像和工作区分配空间
 	checkCudaErrors(cudaMalloc((void **)&GPU_source, sizeof(byte)*SourceWidth*SourceHeight), "a");

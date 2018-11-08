@@ -571,7 +571,8 @@ UINT ImageProcess::DFT_CUDA(LPVOID workspaceNoType)
 
 		byte* handleImage_data_start = (byte*)handledImage_buf->GetBits() + handledImage_buf->GetPitch()*(handledImage_buf->GetHeight() - 1);
 
-		DFT_host(pixel, handleImage_data_start, handleImage.getWidth(), handleImage.getHeight(), srcImage.getWidth(), srcImage.getHeight(), handledImage_buf->GetPitch(), handledImage_buf->GetBPP() / 8);
+		DFT_host(pixel, handleImage_data_start, handleImage.getWidth(), handleImage.getHeight(), srcImage.getWidth(), srcImage.getHeight(),
+			handledImage_buf->GetPitch(), handledImage_buf->GetBPP() / 8);
 
 		delete[] pixel;		
 	}
