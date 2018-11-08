@@ -6,6 +6,8 @@
 #include <complex>
 #include <algorithm>
 
+extern "C" void DFT_host(byte* source, byte* result_buf, int HandleWidth, int HandleHeight, int SourceWidth, int SourceHeight, int pitch, int pixelSize);
+
 UINT ImageProcess::zoom(LPVOID workspaceNoType)
 {
 
@@ -541,6 +543,41 @@ UINT ImageProcess::WienerFilter(LPVOID workspaceNoType)
 	}
 	auto wnd = ((CWnd*)(workspace->window));
 	PostMessageW(wnd->GetSafeHwnd(), WM_WIENERFILTER, 1, NULL);
+	return 0;
+}
+
+UINT ImageProcess::DFT_CUDA(LPVOID workspaceNoType)
+{
+	ThreadWorkSpace* p = (ThreadWorkSpace*)workspaceNoType;
+
+	MyImage srcImage(p->img);
+	MyImage handleImage(p->handled);
+
+	auto handledImage_buf = p->handled;
+
+	if (srcImage.isColorful())
+	{
+		//图片是彩色的
+		auto pixel = new byte[srcImage.getHeight()*srcImage.getWidth()];
+
+		//将原图像转化为灰度图像
+		for (int y = 0; y < srcImage.getHeight(); y++)
+		{
+			for (int x = 0; x < srcImage.getWidth(); x++)
+			{
+				pixel[y*srcImage.getWidth() + x] = (byte)(0.299*srcImage.readImage_R(x, y) + 0.587*srcImage.readImage_G(x, y) + 0.114*srcImage.readImage_B(x, y));
+			}
+		}
+
+		byte* handleImage_data_start = (byte*)handledImage_buf->GetBits() + handledImage_buf->GetPitch()*(handledImage_buf->GetHeight() - 1);
+
+		DFT_host(pixel, handleImage_data_start, handleImage.getWidth(), handleImage.getHeight(), srcImage.getWidth(), srcImage.getHeight(), handledImage_buf->GetPitch(), handledImage_buf->GetBPP() / 8);
+
+		delete[] pixel;		
+	}
+
+	auto wnd = ((CWnd*)(p->window));
+	PostMessageW(wnd->GetSafeHwnd(), WM_DFTCUDA, 1, NULL);
 	return 0;
 }
 

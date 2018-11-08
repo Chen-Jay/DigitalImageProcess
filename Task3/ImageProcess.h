@@ -56,6 +56,7 @@ namespace ImageProcess
 	 UINT MeanFilter(LPVOID param);
 	 UINT GaussFilter(LPVOID param);
 	 UINT WienerFilter(LPVOID param);
+	 UINT DFT_CUDA(LPVOID param);
 }
 
 //缩放的参数/方法
