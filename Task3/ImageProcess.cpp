@@ -10,7 +10,6 @@ extern "C" void DFT_host(byte* source, byte* result_buf, int HandleWidth, int Ha
 
 UINT ImageProcess::zoom(LPVOID workspaceNoType)
 {
-
 	ThreadWorkSpace* workspace = (ThreadWorkSpace*)workspaceNoType;
 
 	zoomParam* param = (zoomParam*)workspace->ctx;
